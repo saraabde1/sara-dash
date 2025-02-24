@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SA Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100%;
+            background-color: #7ebd79;
+            color: white;
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar h1 {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: white;
+            text-decoration: none;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background-color: #627bc0;
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header-subtitle {
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .status-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background-color: #34d399;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-icon {
+            padding: 0.75rem;
+            border-radius: 50%;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.blue {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        .stat-icon.green {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+
+        .stat-icon.yellow {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .stat-icon.red {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .stat-info h3 {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info p {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Activity Table */
+        .activity-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6b7280;
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+        }
+
+        .status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-failed {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <h1>Dashboard</h1>
+        <a href="#" class="nav-link">
+            <i class="fas fa-home"></i> Home
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-chart-bar"></i> Analytics
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-users"></i> Users
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-cog"></i> Settings
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div>
+                    <h2 class="header-title">Welcome back, Admin</h2>
+                    <p class="header-subtitle">Here's what's happening today</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-primary">
+                        <i class="fas fa-plus"></i> New Project
+                    </button>
+                    <div style="position: relative;">
+                        <img src="images.png" alt="Profile" class="profile-img">
+                        <span class="status-indicator"></span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Users</h3>
+                        <p id="userCount">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon green">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Revenue</h3>
+                        <p id="revenue">$0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon yellow">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Orders</h3>
+                        <p id="orders">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon red">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Growth</h3>
+                        <p id="growth">0%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3 class="chart-title">Revenue Overview</h3>
+                <canvas id="revenueChart" height="300"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3 class="chart-title">User Activity</h3>
+                <canvas id="userChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-card">
+            <h3 class="chart-title">Recent Activity</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTable">
+                        <!-- Activity rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Update stats with random data
+            const updateStats = () => {
+                document.getElementById('userCount').textContent = Math.floor(Math.random() * 10000);
+                document.getElementById('revenue').textContent = '$' + (Math.random() * 100000).toFixed(2);
+                document.getElementById('orders').textContent = Math.floor(Math.random() * 1000);
+                document.getElementById('growth').textContent = (Math.random() * 100).toFixed(1) + '%';
+            };
+            updateStats();
+            setInterval(updateStats, 5000);
+
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: Array.from({ length: 6 }, () => Math.random() * 100000),
+                        borderColor: '#2563eb',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+
+            // User Activity Chart
+            const userCtx = document.getElementById('userChart').getContext('2d');
+            new Chart(userCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Active Users',
+                        data: Array.from({ length: 7 }, () => Math.random() * 1000),
+                        backgroundColor: 'rgba(37, 99, 235, 0.5)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+
+            // Generate random activity
+            const activities = ['logged in', 'made a purchase', 'updated profile', 'added item to cart'];
+            const statuses = [
+                '<span class="status-badge status-completed">Completed</span>',
+                '<span class="status-badge status-pending">Pending</span>',
+                '<span class="status-badge status-failed">Failed</span>'
+            ];
+
+            const generateActivity = () => {
+                const activity = activities[Math.floor(Math.random() * activities.length)];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const time = new Date().toLocaleTimeString();
+
+                return `
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <img src="./user.png" alt="User" class="user-avatar">
+                                    <div>User ${Math.floor(Math.random() * 100)}</div>
+                                </div>
+                            </td>
+                            <td>${activity}</td>
+                            <td>${time}</td>
+                            <td>${status}</td>
+                        </tr>
+                    `;
+            };
+
+            // Update activity table
+            const updateActivity = () => {
+                const table = document.getElementById('activityTable');
+                table.insertAdjacentHTML('afterbegin', generateActivity());
+                // Keep only the last 5 rows
+                while (table.children.length > 5) {
+                    table.removeChild(table.lastChild);
+                }
+            };
+
+            // Initial activity
+            updateActivity();
+            setInterval(updateActivity, 3000);
+
+            // Mobile sidebar toggle functionality
+            const toggleButton = document.createElement('button');
+            toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
+            toggleButton.className = 'mobile-menu-toggle';
+            toggleButton.style.cssText = `
+                    position: fixed;
+                    top: 1rem;
+                    left: 1rem;
+                    z-index: 1000;
+                    background: #2563eb;
+                    color: white;
+                    border: none;
+                    padding: 0.5rem;
+                    border-radius: 0.375rem;
+                    cursor: pointer;
+                    display: none;
+                `;
+
+            document.body.appendChild(toggleButton);
+
+            // Add responsive styles for mobile menu toggle
+            const style = document.createElement('style');
+            style.textContent = `
+                    @media (max-width: 768px) {
+                        .mobile-menu-toggle {
+                            display: block;
+                        }
+                        
+                        .sidebar.active {
+                            transform: translateX(0);
+                        }
+                        
+                        .main-content {
+                            padding-top: 4rem;
+                        }
+                    }
+                `;
+            document.head.appendChild(style);
+
+            // Toggle sidebar on mobile
+            toggleButton.addEventListener('click', () => {
+                const sidebar = document.querySelector('.sidebar');
+                sidebar.classList.toggle('active');
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                const sidebar = document.querySelector('.sidebar');
+                const toggle = document.querySelector('.mobile-menu-toggle');
+
+                if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                    sidebar.classList.remove('active');
+                }
+            });
+
+            // Add window resize handler for charts
+            window.addEventListener('resize', () => {
+                if (window.matchMedia('(max-width: 768px)').matches) {
+                    // Adjust chart sizes for mobile
+                    document.querySelectorAll('canvas').forEach(canvas => {
+                        canvas.style.height = '250px';
+                    });
+                } else {
+                    // Reset chart sizes for desktop
+                    document.querySelectorAll('canvas').forEach(canvas => {
+                        canvas.style.height = '300px';
+                    });
+                }
+            });
+
+            // Add hover effects for interactive elements
+            document.querySelectorAll('.stat-card, .chart-card').forEach(card => {
+                card.addEventListener('mouseover', () => {
+                    card.style.transform = 'translateY(-2px)';
+                    card.style.transition = 'transform 0.2s ease';
+                });
+
+                card.addEventListener('mouseout', () => {
+                    card.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Add loading states for data updates
+            const addLoadingState = (element) => {
+                element.style.opacity = '0.7';
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                }, 300);
+            };
+
+            // Apply loading states during updates
+            const originalUpdateStats = updateStats;
+            updateStats = () => {
+                document.querySelectorAll('.stat-card').forEach(card => {
+                    addLoadingState(card);
+                });
+                originalUpdateStats();
+            };
+        });
+    </script>
+</body>
